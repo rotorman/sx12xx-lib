@@ -13,6 +13,9 @@
 //  and state transitions require extra time depending on prior state"
 
 
+extern void sx_dio_disable_run_exti_isr(void);
+extern void sx_dio_enable_run_exti_isr(void);
+
 // spi
 
 void Sx128xDriverBase::SpiRead(uint8_t* datain, uint8_t len)
@@ -44,29 +47,34 @@ uint8_t dummy;
 void Sx128xDriverBase::WriteCommand(uint8_t opcode, uint8_t* data, uint8_t len)
 {
     WaitOnBusy();
+    sx_dio_disable_run_exti_isr();
     SpiSelect();
     SpiTransfer(opcode, &_status);
     if (len > 0) SpiWrite(data, len);
     SpiDeselect();
     SetDelay(12); // semtech driver says 12 us
+    sx_dio_enable_run_exti_isr();
 }
 
 
 void Sx128xDriverBase::ReadCommand(uint8_t opcode, uint8_t* data, uint8_t len)
 {
     WaitOnBusy();
+    sx_dio_disable_run_exti_isr();
     SpiSelect();
     SpiTransfer(opcode, &_status);
     SpiWrite(0); // NOP
     SpiRead(data, len);
     SpiDeselect();
     // no delay according to semtech driver
+    sx_dio_enable_run_exti_isr();
 }
 
 
 void Sx128xDriverBase::WriteRegister(uint16_t adr, uint8_t* data, uint8_t len)
 {
     WaitOnBusy();
+    sx_dio_disable_run_exti_isr();
     SpiSelect();
     SpiTransfer(SX1280_CMD_WRITE_REGISTER, &_status);
     SpiWrite((adr & 0xFF00) >> 8);
@@ -74,12 +82,14 @@ void Sx128xDriverBase::WriteRegister(uint16_t adr, uint8_t* data, uint8_t len)
     SpiWrite(data, len);
     SpiDeselect();
     SetDelay(12); // semtech driver says 12 us
+    sx_dio_enable_run_exti_isr();
 }
 
 
 void Sx128xDriverBase::ReadRegister(uint16_t adr, uint8_t* data, uint8_t len)
 {
     WaitOnBusy();
+    sx_dio_disable_run_exti_isr();
     SpiSelect();
     SpiTransfer(SX1280_CMD_READ_REGISTER, &_status);
     SpiWrite((adr & 0xFF00) >> 8);
@@ -88,24 +98,28 @@ void Sx128xDriverBase::ReadRegister(uint16_t adr, uint8_t* data, uint8_t len)
     SpiRead(data, len);
     SpiDeselect();
     // no delay according to semtech driver
+    sx_dio_enable_run_exti_isr();
 }
 
 
 void Sx128xDriverBase::WriteBuffer(uint8_t offset, uint8_t* data, uint8_t len)
 {
     WaitOnBusy();
+    sx_dio_disable_run_exti_isr();
     SpiSelect();
     SpiTransfer(SX1280_CMD_WRITE_BUFFER, &_status);
     SpiWrite(offset);
     SpiWrite(data, len);
     SpiDeselect();
     SetDelay(12); // semtech driver says 12 us
+    sx_dio_enable_run_exti_isr();
 }
 
 
 void Sx128xDriverBase::ReadBuffer(uint8_t offset, uint8_t* data, uint8_t len)
 {
     WaitOnBusy();
+    sx_dio_disable_run_exti_isr();
     SpiSelect();
     SpiTransfer(SX1280_CMD_READ_BUFFER, &_status);
     SpiWrite(offset);
@@ -113,6 +127,7 @@ void Sx128xDriverBase::ReadBuffer(uint8_t offset, uint8_t* data, uint8_t len)
     SpiRead(data, len);
     SpiDeselect();
     // no delay according to semtech driver
+    sx_dio_enable_run_exti_isr();
 }
 
 
